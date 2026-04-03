@@ -84,10 +84,7 @@ async fn main() -> anyhow::Result<()> {
 
     let args = Args::parse();
 
-    let config_path = args
-        .config
-        .clone()
-        .or_else(default_config_path_if_exists);
+    let config_path = args.config.or_else(default_config_path_if_exists);
 
     let server_config = if let Some(config_path) = config_path {
         // ---- Config file mode ----
