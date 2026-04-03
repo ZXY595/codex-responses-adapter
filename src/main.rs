@@ -23,7 +23,7 @@ use tracing_subscriber::EnvFilter;
 /// Translate Responses API to Chat Completions API for third-party LLMs.
 ///
 /// Two modes:
-///   1. Config file: --config <path> or ~/.codex-responses-adapter.toml
+///   1. Config file: --config <path> or automatically searching (see --help)
 ///   2. CLI args:    --upstream-url ... --provider glm (single provider)
 #[derive(Debug, Parser)]
 #[command(
@@ -33,9 +33,12 @@ use tracing_subscriber::EnvFilter;
 struct Args {
     /// Optional path to the TOML config file.
     ///
-    /// If omitted, the adapter will automatically load
-    /// ~/.codex-responses-adapter.toml when that file exists. CLI args
-    /// (--upstream-url etc.) are ignored whenever a config file is loaded.
+    #[arg(verbatim_doc_comment)]
+    /// If omitted, the adapter will automatically search for a config file in:
+    /// - `~/.codex-responses-adapter.toml`
+    /// - `XDG_CONFIG_DIRS/codex-responses-adapter/config.toml`
+    ///
+    /// CLI args (--upstream-url etc.) are ignored whenever a config file is loaded.
     #[arg(long)]
     config: Option<String>,
 
