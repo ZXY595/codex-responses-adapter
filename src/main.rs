@@ -151,5 +151,11 @@ async fn main() -> anyhow::Result<()> {
 fn default_config_path_if_exists() -> Option<String> {
     let home = std::env::var("HOME").ok()?;
     let path = std::path::Path::new(&home).join(".codex-responses-adapter.toml");
-    path.is_file().then(|| path.to_string_lossy().into_owned())
+    path.is_file()
+        .then_some(path)
+        .or_else(|| {
+            xdg::BaseDirectories::with_prefix("codex-responses-adapter")
+                .find_config_file("config.toml")
+        })
+        .map(|path| path.to_string_lossy().into_owned())
 }
