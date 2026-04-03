@@ -35,5 +35,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"] }
 listenfd = "1.0"
+xdg = "3.0.0"
 
 [workspace]
