@@ -9,6 +9,7 @@
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::net::SocketAddr;
+use std::os::fd::AsRawFd;
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -202,9 +203,19 @@ impl ServerConfig {
 // ---------------------------------------------------------------------------
 
 pub async fn run_server(config: ServerConfig) -> anyhow::Result<()> {
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
-    let listener = TcpListener::bind(addr).await?;
-    info!("codex-responses-adapter listening on http://{addr}");
+    let listener = if let Some(listener) = listenfd::ListenFd::from_env().take_tcp_listener(0)? {
+        TcpListener::from_std(listener).inspect(|listener| {
+            info!(
+                "codex-responses-adapter listening on fd {}",
+                listener.as_raw_fd()
+            )
+        })
+    } else {
+        let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+        TcpListener::bind(addr)
+            .await
+            .inspect(|_| info!("codex-responses-adapter listening on http://{addr}"))
+    }?;
 
     for (name, p) in &config.providers {
         let auth_mode = if p.use_incoming_auth {
